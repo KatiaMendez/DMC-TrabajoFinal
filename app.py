@@ -1,14 +1,4 @@
-"""
-InsuranceCompany | Exploración de Datos (EDA)
-Caso de Estudio N.° 3 – Python for Analytics
-
-Ejecución:
-    pip install -r requirements.txt
-    streamlit run app.py
-"""
-
 from io import StringIO
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -561,44 +551,149 @@ elif module == "Análisis exploratorio (EDA)":
                         use_container_width=True
                     )
 
-        # 10. Hallazgos
+
+        # Ítem 10: Hallazgos clave
         with tabs[9]:
-            total_missing = int(df.isna().sum().sum())
+            st.markdown("#### Hallazgos clave")
+            st.write(
+                "Resumen de la calidad del dataset y de los patrones "
+                "observados en la renovación de pólizas."
+            )
+
             total_cells = df.size
+            missing_cells = int(df.isna().sum().sum())
 
-            a, b, c = st.columns(3)
-            a.metric("Filas", f"{len(df):,}")
-            b.metric("Columnas", f"{df.shape[1]:,}")
-            c.metric("% celdas faltantes", f"{total_missing / total_cells * 100:.2f}%")
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Registros", f"{len(df):,}")
+            c2.metric("Variables", f"{df.shape[1]:,}")
+            c3.metric(
+                "Celdas faltantes",
+                f"{missing_cells / total_cells * 100:.2f}%"
+                if total_cells else "0.00%"
+            )
 
-            missing = missing_summary(df)
-            if total_missing:
-                top = missing.iloc[0]
-                st.write(
-                    f"**Mayor cantidad de faltantes:** {top['Variable']} "
-                    f"({top['Valores faltantes']:,}; {top['% faltantes']:.2f}%)."
+            findings = []
+
+            # Hallazgo sobre valores faltantes
+            if missing_cells:
+                top_missing = analyzer.missing_summary().iloc[0]
+                findings.append(
+                    f"La variable con más datos faltantes es "
+                    f"**{top_missing['Variable']}**: "
+                    f"{top_missing['% faltantes']:.2f}%."
                 )
             else:
-                st.success("No hay valores faltantes.")
+                findings.append("No se detectaron valores faltantes.")
 
-            st.write(f"Variables numéricas: **{len(numeric)}**.")
-            st.write(f"Variables categóricas/texto: **{len(categorical)}**.")
+            # Hallazgo sobre tipos de variables
+            findings.append(
+                f"El dataset contiene **{len(numeric_cols)} variables numéricas** "
+                f"y **{len(categorical_cols)} variables categóricas o de texto**."
+            )
 
+            # Gráfico de proporción de renovación
+            st.markdown("#### ¿Cuántos clientes renovaron su póliza?")
+
+            if "renewal" not in df.columns:
+                st.info(
+                    "No se encontró la columna `renewal`; "
+                    "no es posible mostrar la proporción de renovación."
+                )
+            else:
+                renewal = pd.to_numeric(df["renewal"], errors="coerce")
+                valid = renewal.isin([0, 1])
+                valid_count = int(valid.sum())
+
+                if valid_count == 0:
+                    st.warning(
+                        "La columna `renewal` no contiene valores válidos "
+                        "codificados como 0 (no renovó) y 1 (renovó). "
+                        "Verifica el diccionario de datos."
+                    )
+                else:
+                    counts = (
+                        renewal[valid]
+                        .map({0: "No renovó", 1: "Renovó"})
+                        .value_counts()
+                        .reindex(["Renovó", "No renovó"], fill_value=0)
+                    )
+
+                    percentages = counts / valid_count * 100
+
+                    left, right = st.columns([1.2, 1])
+
+                    with left:
+                        fig, ax = plt.subplots(figsize=(7, 4))
+                        bars = ax.bar(
+                            counts.index,
+                            percentages.values
+                        )
+                        ax.set_title("Proporción de renovación")
+                        ax.set_ylabel("Clientes (%)")
+                        ax.set_ylim(0, max(100, percentages.max() * 1.15))
+
+                        ax.bar_label(
+                            bars,
+                            labels=[
+                                f"{p:.1f}%"
+                                for p in percentages.values
+                            ],
+                            padding=3
+                        )
+
+                        plot_to_streamlit(fig)
+
+                    with right:
+                        st.markdown("**Resumen de resultados**")
+                        summary = pd.DataFrame({
+                            "Resultado": counts.index,
+                            "Clientes": counts.values,
+                            "Proporción (%)": percentages.round(2).values
+                        })
+                        st.dataframe(
+                            summary,
+                            use_container_width=True,
+                            hide_index=True
+                        )
+                        st.caption(
+                            f"Base del cálculo: {valid_count:,} registros "
+                            f"con renovación codificada como 0 o 1."
+                        )
+
+                    renewed_pct = float(percentages["Renovó"])
+                    not_renewed_pct = float(percentages["No renovó"])
+
+                    findings.append(
+                        f"El **{renewed_pct:.2f}%** de los registros válidos "
+                        "corresponde a clientes que renovaron, mientras que "
+                        f"el **{not_renewed_pct:.2f}%** corresponde a clientes "
+                        "que no renovaron."
+                    )
+
+                    invalid_count = len(df) - valid_count
+                    if invalid_count:
+                        st.warning(
+                            f"Se excluyeron {invalid_count:,} registros del "
+                            "gráfico porque `renewal` tiene valores nulos "
+                            "o diferentes de 0 y 1."
+                        )
+
+            # Otros hallazgos de calidad
             if "id" in df.columns:
-                st.write(f"Identificadores repetidos: **{df['id'].duplicated().sum():,}**.")
+                duplicates = int(df["id"].duplicated().sum())
+                findings.append(
+                    f"Se encontraron **{duplicates:,} identificadores repetidos** "
+                    "en `id`; revisa si esta columna debe ser única."
+                )
 
-            if "renewal" in df.columns:
-                renewal = df["renewal"].value_counts(dropna=False)
-                summary = pd.DataFrame({
-                    "Valor": renewal.index.astype(str),
-                    "Frecuencia": renewal.values,
-                    "Proporción (%)": (
-                        renewal.values / len(df) * 100
-                    ).round(2)
-                })
+            st.markdown("#### Principales hallazgos")
+            for i, finding in enumerate(findings, start=1):
+                st.markdown(f"{i}. {finding}")
 
-                st.write("**Distribución de renovación**")
-                st.dataframe(summary, use_container_width=True, hide_index=True)
+            st.caption(
+                "Los resultados son descriptivos y no demuestran causalidad. "
+                "Su interpretación debe contrastarse con el contexto del negocio."
+            )
 
 
 # =========================================================
