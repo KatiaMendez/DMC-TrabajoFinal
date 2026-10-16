@@ -108,8 +108,9 @@ def missing_count(df):
     return df, notes
 
 
+
 def load_dataset(file):
-    """Carga y valida el archivo CSV."""
+    """Carga, valida y prepara el archivo CSV."""
     if file.size == 0:
         raise ValueError("El archivo está vacío.")
 
@@ -118,19 +119,31 @@ def load_dataset(file):
 
     try:
         file.seek(0)
-        df = pd.read_csv(file, low_memory=False)
-    except UnicodeDecodeError:
-        file.seek(0)
-        df = pd.read_csv(
-            file,
-            encoding="latin-1",
-            low_memory=False
-        )
+
+        try:
+            df = pd.read_csv(file, low_memory=False, encoding="utf-8-sig")
+        except UnicodeDecodeError:
+            file.seek(0)
+            df = pd.read_csv(file, low_memory=False, encoding="latin-1")
+
+    except pd.errors.EmptyDataError as exc:
+        raise ValueError("El archivo no contiene datos legibles.") from exc
+
+    except pd.errors.ParserError as exc:
+        raise ValueError(
+            f"Error en la estructura del CSV: {exc}"
+        ) from exc
 
     if df.empty:
-        raise ValueError("El CSV no contiene registros.")
+        raise ValueError(
+            "El CSV no contiene registros. Verifica sus encabezados y separador."
+        )
 
-    return clean_dataframe(df)
+    # missing_count devuelve el DataFrame limpio y las notas.
+    df, notes = missing_count(df)
+
+    return df, notes
+
 
 
 def missing_summary(df):
