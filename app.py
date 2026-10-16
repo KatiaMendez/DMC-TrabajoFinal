@@ -47,8 +47,8 @@ st.markdown("""
 }
 
 [data-testid="stSidebar"] hr {
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 
 [data-testid="stSidebar"] [data-testid="stFileUploader"] {
@@ -303,7 +303,7 @@ with st.sidebar:
     )
 
     st.divider()
-    st.caption("InsuranceCompany EDA · Aplicación académica")
+    st.caption("EDA · Aplicación académica")
 
 
 # =========================================================
