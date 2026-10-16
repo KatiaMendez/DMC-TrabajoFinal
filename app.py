@@ -355,13 +355,6 @@ if df is not None:
 # 6. INICIO
 # =========================================================
 if pagina == "Inicio":
-    st.subheader("Bienvenido")
-
-    st.write(
-        "Explora los datos históricos de clientes de una compañía "
-        "de seguros mediante estadísticas descriptivas y "
-        "visualizaciones."
-    )
 
     left, right = st.columns(2)
 
