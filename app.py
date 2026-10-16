@@ -572,33 +572,43 @@ with st.sidebar:
 
 
 # =========================================================
-# 6. CARGA Y PREPARACIÓN DEL DATASET
+# 6. INICIO
 # =========================================================
-df = None
-notes = []
-load_error = None
+if pagina == "Inicio":
 
-if uploaded_file is not None:
-    try:
-        df, notes = load_dataset(uploaded_file)
-    except (
-        ValueError,
-        pd.errors.ParserError,
-        pd.errors.EmptyDataError,
-        UnicodeDecodeError,
-    ) as exc:
-        load_error = str(exc)
-    except Exception:
-        load_error = (
-            "No se pudo procesar el archivo. "
-            "Verifica que sea un CSV válido."
+    left, right = st.columns(2)
+
+    with left:
+        st.markdown("#### Objetivo")
+        st.write(
+            "Analizar la estructura, calidad y distribución de los "
+            "datos para identificar patrones relacionados con la "
+            "renovación de pólizas. No se construyen modelos predictivos."
         )
 
-if load_error:
-    st.error(f"Error al cargar el dataset: {load_error}")
+        st.markdown("#### Dataset")
+        st.write(
+            "Este dataset contiene información histórica de clientes de "
+            "una compañía de seguros. Incluye variables demográficas, económicas,"
+            "historial de pagos, comportamiento de morosidad, canal de captación,"
+            "tipo de residencia, valor de la prima y puntaje de evaluación del cliente."
+        )
 
-# Se instancia la clase una vez que el dataset ha sido validado.
-analyzer = DataAnalyzer(df) if df is not None else None
+    with right:
+        st.markdown("#### Ficha del proyecto")
+        st.write("**Autora:**")
+        st.write("    Katia Roxana Mendez Cortez")
+        st.write("**Programa:**")
+        st.write("    Especialización en Python for Analytics")
+        st.write("**Año:** 2026")
+        st.write("**Tecnologías:**")
+        st.write("    Python, Streamlit, Pandas, NumPy y Seaborn")
+
+    if df is None:
+        st.info("Para continuar carga un CSV válido desde el panel lateral.")
+
+    else:
+        st.info("Archivo CSV cargado, para analizar seleccione otra sección del menú.")
 
 
 # =========================================================
