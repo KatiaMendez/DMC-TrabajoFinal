@@ -377,14 +377,13 @@ if pagina == "Inicio":
     with right:
         st.markdown("#### Ficha del proyecto")
         st.write("**Autora:**")
-        st.write("Katia Roxana Mendez Cortez")
-        st.write(
-            "**Programa:** Especialización en Python for Analytics"
-        )
-        st.write("**Año:** 2026")
-        st.write(
-            "**Tecnologías:** Python, Streamlit, Pandas, NumPy y Seaborn"
-        )
+        st.write("    Katia Roxana Mendez Cortez")
+        st.write("**Programa:**")
+        st.write("    Especialización en Python for Analytics")
+        st.write("**Año:**")
+        st.write("    2026")
+        st.write("**Tecnologías:**"
+        st.write("    Python, Streamlit, Pandas, NumPy y Seaborn")
 
     if df is None:
         st.info("Carga un CSV válido desde el panel lateral.")
