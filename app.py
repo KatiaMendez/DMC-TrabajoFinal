@@ -366,10 +366,12 @@ if pagina == "Inicio":
             "renovación de pólizas. No se construyen modelos predictivos."
         )
 
-        st.markdown("#### Variables")
+        st.markdown("#### Dataset")
         st.write(
-            "Edad, ingresos, primas, pagos tardíos, canal de captación, "
-            "tipo de residencia y renovación."
+            "Este dataset contiene información histórica de clientes de "
+            "una compañía de seguros. Incluye variables demográficas, económicas,"
+            "historial de pagos, comportamiento de morosidad, canal de captación,"
+            "tipo de residencia, valor de la prima y puntaje de evaluación del cliente."
         )
 
     with right:
