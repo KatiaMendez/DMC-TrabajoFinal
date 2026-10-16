@@ -334,9 +334,9 @@ if uploaded_file is not None:
 if load_error:
     st.error(f"Error al cargar el dataset: {load_error}")
 
-#if df is not None:
-#    for note in notes:
-#        st.warning(note)
+if df is not None:
+    for note in notes:
+        st.warning(note)
 
     missing_columns = sorted(
         EXPECTED_COLUMNS - set(df.columns)
