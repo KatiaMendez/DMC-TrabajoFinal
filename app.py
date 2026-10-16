@@ -619,8 +619,8 @@ if pagina == "Inicio":
         st.write(
             "Este dataset contiene información histórica de clientes de "
             "una compañía de seguros. Incluye variables demográficas, económicas,"
-            "historial de pagos, comportamiento de morosidad, canal de captación,"
-            "tipo de residencia, valor de la prima y puntaje de evaluación del cliente."
+            " historial de pagos, comportamiento de morosidad, canal de captación,"
+            " tipo de residencia, valor de la prima y puntaje de evaluación del cliente."
         )
 
     with right:
