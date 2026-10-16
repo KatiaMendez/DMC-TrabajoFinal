@@ -148,7 +148,7 @@ st.title("📊 InsuranceCompany | EDA")
 st.caption("Caso de Estudio N.° 3 · 2026")
 
 with st.sidebar:
-    st.sidebar.subtitle("Python for Analytics")
+    st.sidebar.title("Python for Analytics")
     st.sidebar.image("LogoKRMC-rectangular.png")
     
     st.divider()
