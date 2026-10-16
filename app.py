@@ -66,7 +66,7 @@ st.markdown("""
 # =========================================================
 # 3. FUNCIONES AUXILIARES
 # =========================================================
-def clean_dataframe(df):
+def missing_count(df):
     """Normaliza encabezados y valores faltantes."""
     df = df.copy()
 
@@ -334,9 +334,9 @@ if uploaded_file is not None:
 if load_error:
     st.error(f"Error al cargar el dataset: {load_error}")
 
-if df is not None:
-    for note in notes:
-        st.warning(note)
+#if df is not None:
+#    for note in notes:
+#        st.warning(note)
 
     missing_columns = sorted(
         EXPECTED_COLUMNS - set(df.columns)
