@@ -376,7 +376,8 @@ if pagina == "Inicio":
 
     with right:
         st.markdown("#### Ficha del proyecto")
-        st.write("**Autora:** Katia Roxana Mendez Cortez")
+        st.write("**Autora:**")
+        st.write("Katia Roxana Mendez Cortez")
         st.write(
             "**Programa:** Especialización en Python for Analytics"
         )
