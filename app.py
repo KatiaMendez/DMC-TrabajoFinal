@@ -541,7 +541,7 @@ with st.sidebar:
     st.subheader("Python for Analytics")
 
     try:
-        st.image("LogoKRMC-rectangular.png", width=215)
+        st.image("LogoKRMC-rectangular.png", width=225)
     except Exception:
         st.caption("InsuranceCompany EDA")
 
@@ -764,10 +764,6 @@ elif pagina == "Análisis exploratorio (EDA)":
         # -------------------------------------------------
         with tabs[1]:
             st.markdown("### Clasificación de variables")
-            st.write(
-                "La clase `DataAnalyzer` identifica los tipos de datos y "
-                "resume los valores nulos y únicos de cada columna."
-            )
 
             summary_types = analyzer.variable_summary()
             c1, c2, c3 = st.columns(3)
