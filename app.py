@@ -205,7 +205,7 @@ if df is not None:
 # =========================================================
 # 5. INICIO
 # =========================================================
-if module == "Inicio":
+if pagina == "Inicio":
     st.subheader("Bienvenido")
 
     st.write(
@@ -248,7 +248,7 @@ if module == "Inicio":
 # =========================================================
 # 6. CARGA DEL DATASET
 # =========================================================
-elif module == "Carga del dataset":
+elif pagina == "Carga del dataset":
     st.subheader("Carga y validación del dataset")
 
     if df is None:
@@ -286,7 +286,7 @@ elif module == "Carga del dataset":
 # =========================================================
 # 7. ANÁLISIS EXPLORATORIO (10 APARTADOS)
 # =========================================================
-elif module == "Análisis exploratorio (EDA)":
+elif pagina == "Análisis exploratorio (EDA)":
     st.subheader("Análisis exploratorio de datos")
 
     if df is None:
@@ -705,7 +705,7 @@ elif module == "Análisis exploratorio (EDA)":
 # =========================================================
 # 8. CONCLUSIONES
 # =========================================================
-elif module == "Conclusiones":
+elif pagina == "Conclusiones":
     st.subheader("Conclusiones finales")
 
     if df is None:
