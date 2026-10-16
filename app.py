@@ -47,26 +47,13 @@ st.markdown("""
 }
 
 [data-testid="stSidebar"] hr {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
-[data-testid="stSidebar"] h1 {
-    font-size: 1.05rem;
-    padding-bottom: 0;
-}
-
-[data-testid="stSidebar"] h2 {
-    font-size: 0.95rem;
-}
-
-[data-testid="stSidebar"] .stCaption {
-    font-size: 0.70rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 [data-testid="stSidebar"] [data-testid="stFileUploader"] {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: 1;
+    padding-bottom: 1;
 }
 
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
