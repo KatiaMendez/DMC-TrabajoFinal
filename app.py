@@ -382,7 +382,7 @@ if pagina == "Inicio":
         st.write("    Especialización en Python for Analytics")
         st.write("**Año:**")
         st.write("    2026")
-        st.write("**Tecnologías:**"
+        st.write("**Tecnologías:**")
         st.write("    Python, Streamlit, Pandas, NumPy y Seaborn")
 
     if df is None:
