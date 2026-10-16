@@ -278,6 +278,26 @@ def get_categorical_candidates(df):
     ]
 
 
+def analizar_tipos_variables(df):
+    """Clasifica las columnas del dataset según su tipo de dato."""
+    resultado = pd.DataFrame({
+        "Variable": df.columns,
+        "Tipo de dato": [str(df[col].dtype) for col in df.columns],
+        "Valores no nulos": [df[col].count() for col in df.columns],
+        "Valores nulos": [df[col].isna().sum() for col in df.columns],
+        "Valores únicos": [df[col].nunique() for col in df.columns],
+    })
+
+    resultado["Clasificación"] = resultado["Tipo de dato"].apply(
+        lambda tipo: (
+            "Numérica" if tipo in ["int64", "float64"]
+            else "Fecha" if "datetime" in tipo
+            else "Categórica / texto"
+        )
+    )
+
+    return resultado
+
 # =========================================================
 # 4. ENCABEZADO Y SIDEBAR
 # =========================================================
@@ -483,7 +503,7 @@ elif pagina == "Análisis exploratorio (EDA)":
         # Se mantienen los diez análisis originales.
         tabs = st.tabs([
             "1. Información",
-            "2. Tipos",
+            "2. Variables",
             "3. Descriptiva",
             "4. Faltantes",
             "5. Distribuciones",
@@ -543,41 +563,41 @@ elif pagina == "Análisis exploratorio (EDA)":
         # TAB 2. TIPOS
         # -------------------------------------------------
         with tabs[1]:
-            st.markdown("### Tipos de variables")
-
-            left, right = st.columns(2)
-
-            with left:
-                st.metric("Variables numéricas", len(numeric))
-                st.dataframe(
-                    pd.DataFrame({"Variable": numeric}),
-                    use_container_width=True,
-                    hide_index=True
-                )
-
-            with right:
+            st.subheader("2. Tipos de variables")
+        
+            st.write(
+                "Se utiliza una función personalizada para identificar "
+                "el tipo de dato, la cantidad de valores nulos y únicos "
+                "de cada variable."
+            )
+        
+            resumen_tipos = analizar_tipos_variables(df)
+        
+            col1, col2, col3 = st.columns(3)
+        
+            with col1:
                 st.metric(
-                    "Variables categóricas/texto",
-                    len(categorical)
+                    "Total de variables",
+                    len(resumen_tipos)
                 )
-                st.dataframe(
-                    pd.DataFrame({"Variable": categorical}),
-                    use_container_width=True,
-                    hide_index=True
+        
+            with col2:
+                st.metric(
+                    "Variables numéricas",
+                    (resumen_tipos["Clasificación"] == "Numérica").sum()
                 )
-
-            if "id" in df.columns:
-                st.info(
-                    "`id` es un identificador y no se trata como "
-                    "una variable categórica ordinaria."
+        
+            with col3:
+                st.metric(
+                    "Variables categóricas",
+                    (resumen_tipos["Clasificación"] == "Categórica / texto").sum()
                 )
-
-            if "renewal" in df.columns:
-                st.info(
-                    "`renewal` es un indicador de negocio, aunque "
-                    "esté almacenado como número."
-                )
-
+        
+            st.dataframe(
+                resumen_tipos,
+                use_container_width=True,
+                hide_index=True
+            )
         # -------------------------------------------------
         # TAB 3. DESCRIPTIVA
         # -------------------------------------------------
