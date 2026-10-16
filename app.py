@@ -541,7 +541,7 @@ with st.sidebar:
     st.subheader("Python for Analytics")
 
     try:
-        st.image("LogoKRMC-rectangular.png", width=215)
+        st.image("LogoKRMC-rectangular.png", width=225)
     except Exception:
         st.caption("InsuranceCompany EDA")
 
@@ -625,10 +625,13 @@ if pagina == "Inicio":
 
     with right:
         st.markdown("#### Ficha del proyecto")
-        st.write("**Autora:** Katia Roxana Mendez Cortez")
-        st.write("**Programa:** Especialización en Python for Analytics")
+        st.write("**Autora:**")
+        st.write("Katia Roxana Mendez Cortez")
+        st.write("**Programa:**")
+        st.write("Especialización en Python for Analytics")
         st.write("**Año:** 2026")
-        st.write("**Tecnologías:** Python, Streamlit, Pandas, NumPy, Matplotlib y Seaborn")
+        st.write("**Tecnologías:**")
+        st.write("Python, Streamlit, Pandas, NumPy, Matplotlib y Seaborn")
 
     if df is None:
         st.info("Para comenzar, carga un archivo CSV válido desde el panel lateral.")
