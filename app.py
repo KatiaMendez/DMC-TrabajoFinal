@@ -809,67 +809,125 @@ elif pagina == "Análisis exploratorio (EDA)":
         # -------------------------------------------------
         # TAB 5. DISTRIBUCIONES
         # -------------------------------------------------
+        
         with tabs[4]:
-            st.markdown("### Distribuciones numéricas")
-
-            candidates = get_numeric_candidates(df)
-
-            if not candidates:
-                st.info("No hay variables numéricas disponibles.")
-
+            st.subheader("5. Distribución de variables numéricas")
+        
+            st.write(
+                "Los histogramas permiten observar la distribución de las "
+                "variables numéricas, identificar concentraciones de valores, "
+                "asimetrías y posibles valores extremos."
+            )
+        
+            # Seleccionar variables numéricas
+            variables_numericas = df.select_dtypes(
+                include=["number"]
+            ).columns.tolist()
+        
+            if not variables_numericas:
+                st.warning(
+                    "No se encontraron variables numéricas para generar histogramas."
+                )
             else:
-                col1, col2 = st.columns([2, 1])
-
-                with col1:
-                    variable = st.selectbox(
-                        "Variable numérica",
-                        candidates,
-                        key="tab5_variable"
-                    )
-
-                with col2:
-                    bins = st.slider(
-                        "Número de intervalos",
-                        min_value=5,
-                        max_value=80,
-                        value=30,
-                        key="tab5_bins"
-                    )
-
-                values = pd.to_numeric(
+                variable = st.selectbox(
+                    "Selecciona una variable numérica:",
+                    options=variables_numericas,
+                    key="hist_variable"
+                )
+        
+                # Limpiar valores faltantes e infinitos
+                datos = pd.to_numeric(
                     df[variable],
                     errors="coerce"
+                )
+                datos = datos.replace(
+                    [np.inf, -np.inf],
+                    np.nan
                 ).dropna()
-
-                if values.empty:
-                    st.warning("No hay valores numéricos válidos.")
-
-                else:
-                    plot_values = plot_sample(values)
-
-                    fig, ax = plt.subplots(figsize=(9, 4))
-                    sns.histplot(
-                        plot_values,
-                        bins=bins,
-                        kde=plot_values.nunique() > 1,
-                        ax=ax
+        
+                if datos.empty:
+                    st.warning(
+                        "La variable seleccionada no contiene valores numéricos "
+                        "válidos para graficar."
                     )
-
+                else:
+                    # Histograma con Matplotlib
+                    fig, ax = plt.subplots(figsize=(9, 4.5))
+        
+                    ax.hist(
+                        datos,
+                        bins="auto",
+                        edgecolor="black",
+                        alpha=0.8
+                    )
+        
                     ax.set_title(f"Distribución de {variable}")
                     ax.set_xlabel(variable)
                     ax.set_ylabel("Frecuencia")
-                    show_plot(fig)
-
-                    col1, col2, col3, col4 = st.columns(4)
-                    col1.metric("Media", number(values.mean()))
-                    col2.metric("Mediana", number(values.median()))
-                    col3.metric("Mínimo", number(values.min()))
-                    col4.metric("Máximo", number(values.max()))
-
-                    st.caption(
-                        f"Se graficaron {len(plot_values):,} de "
-                        f"{len(values):,} observaciones válidas."
-                    )
+                    ax.grid(axis="y", alpha=0.25)
+        
+                    fig.tight_layout()
+                    st.pyplot(fig)
+                    plt.close(fig)
+        
+                    # Estadísticas de apoyo para la interpretación
+                    media = datos.mean()
+                    mediana = datos.median()
+                    desviacion = datos.std()
+                    minimo = datos.min()
+                    maximo = datos.max()
+        
+                    col1, col2, col3 = st.columns(3)
+        
+                    with col1:
+                        st.metric("Observaciones válidas", f"{len(datos):,}")
+        
+                    with col2:
+                        st.metric("Media", f"{media:,.2f}")
+        
+                    with col3:
+                        st.metric("Mediana", f"{mediana:,.2f}")
+        
+                    # Interpretación visual básica
+                    st.markdown("#### Interpretación visual")
+        
+                    if len(datos) < 2:
+                        st.info(
+                            "Hay menos de dos observaciones válidas. "
+                            "Se recomienda interpretar el histograma con cautela."
+                        )
+                    else:
+                        if media > mediana:
+                            st.write(
+                                "La media es mayor que la mediana. Esto puede "
+                                "ser consistente con una distribución sesgada "
+                                "hacia valores altos."
+                            )
+                        elif media < mediana:
+                            st.write(
+                                "La media es menor que la mediana. Esto puede "
+                                "ser consistente con una distribución sesgada "
+                                "hacia valores bajos."
+                            )
+                        else:
+                            st.write(
+                                "La media y la mediana coinciden o son muy "
+                                "similares. Conviene observar el histograma "
+                                "para evaluar la forma de la distribución."
+                            )
+        
+                        st.write(
+                            f"Los valores observados van de {minimo:,.2f} "
+                            f"a {maximo:,.2f}, con una desviación estándar "
+                            f"de {desviacion:,.2f}."
+                        )
+        
+                        st.write(
+                            "En el histograma, las barras más altas representan "
+                            "los intervalos con mayor frecuencia. Revisa si los "
+                            "datos se concentran en un rango, presentan varios "
+                            "picos o muestran valores alejados del resto."
+                        )
 
         # -------------------------------------------------
         # TAB 6. CATEGÓRICAS
