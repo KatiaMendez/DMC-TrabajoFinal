@@ -388,14 +388,7 @@ if pagina == "Inicio":
         st.info("Carga un CSV válido desde el panel lateral.")
 
     else:
-        a, b, c = st.columns(3)
-
-        a.metric("Registros", f"{len(df):,}")
-        b.metric("Variables", f"{df.shape[1]:,}")
-        c.metric(
-            "Celdas faltantes",
-            f"{int(df.isna().sum().sum()):,}"
-        )
+        st.info("Archivo CSV cargado, para analizar seleccione otra sección del menú.")
 
 
 # =========================================================
