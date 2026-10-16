@@ -47,8 +47,8 @@ st.markdown("""
 }
 
 [data-testid="stSidebar"] hr {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 [data-testid="stSidebar"] [data-testid="stFileUploader"] {
@@ -57,7 +57,7 @@ st.markdown("""
 }
 
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-    gap: 0.45rem;
+    gap: 0.5rem;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -380,8 +380,7 @@ if pagina == "Inicio":
         st.write("    Katia Roxana Mendez Cortez")
         st.write("**Programa:**")
         st.write("    Especialización en Python for Analytics")
-        st.write("**Año:**")
-        st.write("    2026")
+        st.write("**Año:** 2026")
         st.write("**Tecnologías:**")
         st.write("    Python, Streamlit, Pandas, NumPy y Seaborn")
 
