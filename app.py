@@ -382,7 +382,7 @@ if pagina == "Inicio":
         st.write("    Python, Streamlit, Pandas, NumPy y Seaborn")
 
     if df is None:
-        st.info("Carga un CSV válido desde el panel lateral.")
+        st.info("Para continuar carga un CSV válido desde el panel lateral.")
 
     else:
         st.info("Archivo CSV cargado, para analizar seleccione otra sección del menú.")
@@ -462,11 +462,16 @@ elif pagina == "Carga del dataset":
         )
 
 
+
 # =========================================================
-# 8. ANÁLISIS EXPLORATORIO
+# 8. ANÁLISIS EXPLORATORIO DE DATOS (EDA)
 # =========================================================
 elif pagina == "Análisis exploratorio (EDA)":
     st.subheader("Análisis exploratorio de datos")
+    st.caption(
+        "Selecciona una pestaña para consultar cada uno de los "
+        "diez análisis del dataset."
+    )
 
     if df is None:
         st.warning("Carga un CSV válido para habilitar el análisis.")
@@ -474,38 +479,39 @@ elif pagina == "Análisis exploratorio (EDA)":
     else:
         numeric, categorical = get_column_types(df)
 
-        apartado = st.selectbox(
-            "Selecciona el análisis que deseas consultar:",
-            [
-                "1. Información",
-                "2. Tipos",
-                "3. Descriptiva",
-                "4. Faltantes",
-                "5. Distribuciones",
-                "6. Categóricas",
-                "7. Numérica vs renovación",
-                "8. Categórica vs renovación",
-                "9. Análisis dinámico",
-                "10. Hallazgos"
-            ],
-            key="eda_apartado"
-        )
+        # Cada análisis tiene su propio tab.
+        # Se mantienen los diez análisis originales.
+        tabs = st.tabs([
+            "1. Información",
+            "2. Tipos",
+            "3. Descriptiva",
+            "4. Faltantes",
+            "5. Distribuciones",
+            "6. Categóricas",
+            "7. Numérica vs renovación",
+            "8. Categórica vs renovación",
+            "9. Análisis dinámico",
+            "10. Hallazgos"
+        ])
 
         # -------------------------------------------------
-        # 1. INFORMACIÓN GENERAL
+        # TAB 1. INFORMACIÓN
         # -------------------------------------------------
-        if apartado == "1. Información":
-            st.markdown("#### Información general")
+        with tabs[0]:
+            st.markdown("### Información general")
 
-            st.write(
-                f"**Filas:** {len(df):,} | "
-                f"**Columnas:** {df.shape[1]:,}"
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Registros", f"{len(df):,}")
+            col2.metric("Variables", f"{df.shape[1]:,}")
+            col3.metric(
+                "Celdas faltantes",
+                f"{int(df.isna().sum().sum()):,}"
             )
 
             left, right = st.columns(2)
 
             with left:
-                st.markdown("**Tipos de datos**")
+                st.markdown("#### Tipos de datos")
 
                 types_df = pd.DataFrame({
                     "Variable": df.columns,
@@ -519,7 +525,7 @@ elif pagina == "Análisis exploratorio (EDA)":
                 )
 
             with right:
-                st.markdown("**Valores faltantes**")
+                st.markdown("#### Valores faltantes")
 
                 st.dataframe(
                     missing_summary(df),
@@ -527,28 +533,21 @@ elif pagina == "Análisis exploratorio (EDA)":
                     hide_index=True
                 )
 
-            buffer = StringIO()
-            df.info(buf=buffer)
-
-            with st.expander("Ver información técnica del dataset"):
+            with st.expander("Ver información técnica"):
+                buffer = StringIO()
+                df.info(buf=buffer)
                 st.code(buffer.getvalue())
 
         # -------------------------------------------------
-        # 2. TIPOS DE VARIABLES
+        # TAB 2. TIPOS
         # -------------------------------------------------
-        elif apartado == "2. Tipos":
-            st.markdown("#### Tipos de variables")
-
-            a, b = st.columns(2)
-
-            a.metric("Variables numéricas", len(numeric))
-            b.metric("Variables categóricas/texto", len(categorical))
+        with tabs[1]:
+            st.markdown("### Tipos de variables")
 
             left, right = st.columns(2)
 
             with left:
-                st.write("**Numéricas**")
-
+                st.metric("Variables numéricas", len(numeric))
                 st.dataframe(
                     pd.DataFrame({"Variable": numeric}),
                     use_container_width=True,
@@ -556,8 +555,10 @@ elif pagina == "Análisis exploratorio (EDA)":
                 )
 
             with right:
-                st.write("**Categóricas / texto**")
-
+                st.metric(
+                    "Variables categóricas/texto",
+                    len(categorical)
+                )
                 st.dataframe(
                     pd.DataFrame({"Variable": categorical}),
                     use_container_width=True,
@@ -566,32 +567,30 @@ elif pagina == "Análisis exploratorio (EDA)":
 
             if "id" in df.columns:
                 st.info(
-                    "`id` se considera identificador y se excluye "
-                    "de los análisis categóricos."
+                    "`id` es un identificador y no se trata como "
+                    "una variable categórica ordinaria."
                 )
 
             if "renewal" in df.columns:
                 st.info(
-                    "`renewal` es un indicador de negocio, "
-                    "aunque esté almacenado como número."
+                    "`renewal` es un indicador de negocio, aunque "
+                    "esté almacenado como número."
                 )
 
         # -------------------------------------------------
-        # 3. ESTADÍSTICAS DESCRIPTIVAS
+        # TAB 3. DESCRIPTIVA
         # -------------------------------------------------
-        elif apartado == "3. Descriptiva":
-            st.markdown("#### Estadísticas descriptivas")
+        with tabs[2]:
+            st.markdown("### Estadísticas descriptivas")
 
             if not numeric:
-                st.info("No hay variables numéricas.")
+                st.info("No hay variables numéricas disponibles.")
 
             else:
                 stats = df[numeric].describe().T
-
                 stats["Mediana"] = df[numeric].median()
 
                 modes = df[numeric].mode()
-
                 if not modes.empty:
                     stats["Moda"] = modes.iloc[0]
 
@@ -606,7 +605,7 @@ elif pagina == "Análisis exploratorio (EDA)":
                     variable = st.selectbox(
                         "Variable para interpretar",
                         candidates,
-                        key="eda_descriptive_variable"
+                        key="tab3_variable"
                     )
 
                     values = pd.to_numeric(
@@ -620,30 +619,30 @@ elif pagina == "Análisis exploratorio (EDA)":
                         )
 
                     else:
-                        a, b, c = st.columns(3)
+                        col1, col2, col3 = st.columns(3)
 
-                        a.metric("Media", number(values.mean()))
-                        b.metric("Mediana", number(values.median()))
-                        c.metric("Desviación estándar", number(values.std()))
+                        col1.metric("Media", number(values.mean()))
+                        col2.metric("Mediana", number(values.median()))
+                        col3.metric(
+                            "Desviación estándar",
+                            number(values.std())
+                        )
 
                         if values.mean() > values.median():
                             st.write(
                                 "La media supera la mediana; podría "
                                 "existir asimetría hacia valores altos."
                             )
-
                         elif values.mean() < values.median():
                             st.write(
                                 "La media es inferior a la mediana; "
                                 "podría existir asimetría hacia valores bajos."
                             )
-
                         else:
                             st.write(
                                 "La media y la mediana coinciden "
                                 "o son muy cercanas."
                             )
-
                 else:
                     st.info(
                         "No hay variables numéricas distintas de "
@@ -651,53 +650,88 @@ elif pagina == "Análisis exploratorio (EDA)":
                     )
 
         # -------------------------------------------------
-        # 4. VALORES FALTANTES
+        # TAB 4. FALTANTES
         # -------------------------------------------------
-        elif apartado == "4. Faltantes":
-            st.markdown("#### Análisis de valores faltantes")
+        with tabs[3]:
+            st.markdown("### Análisis de valores faltantes")
 
             missing = missing_summary(df)
             missing = missing[
                 missing["Valores faltantes"] > 0
-            ]
+            ].copy()
 
-            st.metric(
-                "Celdas faltantes",
-                f"{int(df.isna().sum().sum()):,}"
+            total_missing = int(df.isna().sum().sum())
+            total_cells = df.size
+            missing_pct = (
+                total_missing / total_cells * 100
+                if total_cells else 0
             )
+
+            col1, col2, col3 = st.columns(3)
+
+            col1.metric("Celdas faltantes", f"{total_missing:,}")
+            col2.metric("Porcentaje faltante", f"{missing_pct:.2f}%")
+            col3.metric("Variables afectadas", f"{len(missing):,}")
 
             if missing.empty:
                 st.success("No se detectaron valores faltantes.")
 
             else:
-                fig, ax = plt.subplots(figsize=(9, 4))
+                left, right = st.columns([1.2, 1])
 
-                sns.barplot(
-                    data=missing.head(30),
-                    x="% faltantes",
-                    y="Variable",
-                    ax=ax
-                )
+                with left:
+                    fig, ax = plt.subplots(figsize=(8, 4))
 
-                ax.set_title("Porcentaje de valores faltantes")
-                show_plot(fig)
+                    sns.barplot(
+                        data=missing.head(30),
+                        x="% faltantes",
+                        y="Variable",
+                        ax=ax
+                    )
 
-                st.dataframe(
-                    missing,
-                    use_container_width=True,
-                    hide_index=True
-                )
+                    ax.set_title("Porcentaje de valores faltantes")
+                    show_plot(fig)
+
+                with right:
+                    st.dataframe(
+                        missing,
+                        use_container_width=True,
+                        hide_index=True
+                    )
 
                 st.info(
                     "Valida la causa de los faltantes antes de "
                     "imputar o excluir registros."
                 )
 
+            st.markdown("#### Identificadores duplicados")
+
+            if "id" in df.columns:
+                duplicate_mask = df["id"].duplicated(keep=False)
+
+                col1, col2 = st.columns(2)
+                col1.metric(
+                    "Identificadores repetidos",
+                    f"{int(df['id'].duplicated().sum()):,}"
+                )
+                col2.metric(
+                    "Filas involucradas",
+                    f"{int(duplicate_mask.sum()):,}"
+                )
+
+                if duplicate_mask.any():
+                    with st.expander("Consultar registros repetidos"):
+                        st.dataframe(
+                            df.loc[duplicate_mask].head(MAX_TABLE_ROWS),
+                            use_container_width=True,
+                            hide_index=True
+                        )
+
         # -------------------------------------------------
-        # 5. DISTRIBUCIONES NUMÉRICAS
+        # TAB 5. DISTRIBUCIONES
         # -------------------------------------------------
-        elif apartado == "5. Distribuciones":
-            st.markdown("#### Distribuciones numéricas")
+        with tabs[4]:
+            st.markdown("### Distribuciones numéricas")
 
             candidates = get_numeric_candidates(df)
 
@@ -705,11 +739,23 @@ elif pagina == "Análisis exploratorio (EDA)":
                 st.info("No hay variables numéricas disponibles.")
 
             else:
-                variable = st.selectbox(
-                    "Variable numérica",
-                    candidates,
-                    key="hist_variable"
-                )
+                col1, col2 = st.columns([2, 1])
+
+                with col1:
+                    variable = st.selectbox(
+                        "Variable numérica",
+                        candidates,
+                        key="tab5_variable"
+                    )
+
+                with col2:
+                    bins = st.slider(
+                        "Número de intervalos",
+                        min_value=5,
+                        max_value=80,
+                        value=30,
+                        key="tab5_bins"
+                    )
 
                 values = pd.to_numeric(
                     df[variable],
@@ -717,23 +763,12 @@ elif pagina == "Análisis exploratorio (EDA)":
                 ).dropna()
 
                 if values.empty:
-                    st.warning(
-                        "No hay observaciones numéricas válidas."
-                    )
+                    st.warning("No hay valores numéricos válidos.")
 
                 else:
-                    bins = st.slider(
-                        "Número de intervalos",
-                        min_value=5,
-                        max_value=80,
-                        value=30,
-                        key="hist_bins"
-                    )
-
                     plot_values = plot_sample(values)
 
-                    fig, ax = plt.subplots(figsize=(8, 3.5))
-
+                    fig, ax = plt.subplots(figsize=(9, 4))
                     sns.histplot(
                         plot_values,
                         bins=bins,
@@ -744,90 +779,85 @@ elif pagina == "Análisis exploratorio (EDA)":
                     ax.set_title(f"Distribución de {variable}")
                     ax.set_xlabel(variable)
                     ax.set_ylabel("Frecuencia")
-
                     show_plot(fig)
 
+                    col1, col2, col3, col4 = st.columns(4)
+                    col1.metric("Media", number(values.mean()))
+                    col2.metric("Mediana", number(values.median()))
+                    col3.metric("Mínimo", number(values.min()))
+                    col4.metric("Máximo", number(values.max()))
+
                     st.caption(
-                        f"Observaciones válidas: {len(values):,}. "
-                        f"Observaciones graficadas: {len(plot_values):,}."
-                    )
-
-                    st.write(
-                        f"**Media:** {number(values.mean())} | "
-                        f"**Mediana:** {number(values.median())} | "
-                        f"**Mínimo:** {number(values.min())} | "
-                        f"**Máximo:** {number(values.max())}"
+                        f"Se graficaron {len(plot_values):,} de "
+                        f"{len(values):,} observaciones válidas."
                     )
 
         # -------------------------------------------------
-        # 6. VARIABLES CATEGÓRICAS
+        # TAB 6. CATEGÓRICAS
         # -------------------------------------------------
-        elif apartado == "6. Categóricas":
-            st.markdown("#### Análisis de variables categóricas")
+        with tabs[5]:
+            st.markdown("### Análisis de variables categóricas")
 
             candidates = get_categorical_candidates(df)
 
             if not candidates:
                 st.info(
-                    "No hay variables categóricas de texto "
-                    "disponibles para analizar."
+                    "No hay variables categóricas de texto disponibles."
                 )
 
             else:
-                variable = st.selectbox(
-                    "Variable categórica",
-                    candidates,
-                    key="cat_variable"
-                )
+                col1, col2 = st.columns([2, 1])
 
-                top = st.slider(
-                    "Categorías a mostrar",
-                    min_value=3,
-                    max_value=MAX_CATEGORIES,
-                    value=10,
-                    key="cat_top"
-                )
+                with col1:
+                    variable = st.selectbox(
+                        "Variable categórica",
+                        candidates,
+                        key="tab6_variable"
+                    )
 
-                # Se calculan frecuencias, pero solo se muestran
-                # las categorías más frecuentes.
-                summary = categorical_summary(
-                    df, variable
-                ).head(top)
+                with col2:
+                    top = st.slider(
+                        "Categorías a mostrar",
+                        min_value=3,
+                        max_value=MAX_CATEGORIES,
+                        value=10,
+                        key="tab6_top"
+                    )
 
-                st.dataframe(
-                    summary,
-                    use_container_width=True,
-                    hide_index=True
-                )
+                summary = categorical_summary(df, variable).head(top)
 
-                fig, ax = plt.subplots(figsize=(8, 4))
+                left, right = st.columns([1, 1.3])
 
-                sns.barplot(
-                    data=summary,
-                    x="Frecuencia",
-                    y="Categoría",
-                    ax=ax
-                )
+                with left:
+                    st.dataframe(
+                        summary,
+                        use_container_width=True,
+                        hide_index=True
+                    )
 
-                ax.set_title(
-                    f"Principales categorías: {variable}"
-                )
+                with right:
+                    fig, ax = plt.subplots(figsize=(8, 4))
 
-                show_plot(fig)
+                    sns.barplot(
+                        data=summary,
+                        x="Frecuencia",
+                        y="Categoría",
+                        ax=ax
+                    )
 
-                unique_count = int(df[variable].nunique(dropna=True))
+                    ax.set_title(f"Principales categorías: {variable}")
+                    show_plot(fig)
 
                 st.caption(
-                    f"Categorías únicas en la variable: {unique_count:,}. "
-                    f"Se muestran las {len(summary)} categorías "
-                    "más frecuentes."
+                    f"Categorías únicas: {df[variable].nunique(dropna=True):,}. "
+                    f"Se muestran las {len(summary)} más frecuentes."
                 )
 
         # -------------------------------------------------
-        # 7. NUMÉRICA VS RENOVACIÓN
+        # TAB 7. NUMÉRICA VS RENOVACIÓN
         # -------------------------------------------------
-        elif apartado == "7. Numérica vs renovación":
-            st.markdown("#### Variables numéricas según renovación")
+        with tabs[6]:
+            st.markdown("### Variables numéricas según renovación")
 
             if "renewal" not in df.columns:
                 st.info("Se requiere la columna `renewal`.")
@@ -844,22 +874,17 @@ elif pagina == "Análisis exploratorio (EDA)":
                     variable = st.selectbox(
                         "Variable numérica",
                         candidates,
-                        key="num_ren_variable"
+                        key="tab7_variable"
                     )
 
                     temp = df[[variable, "renewal"]].copy()
-
                     temp[variable] = pd.to_numeric(
                         temp[variable],
                         errors="coerce"
                     )
 
-                    temp["Renovación"] = renewal_labels(
-                        temp["renewal"]
-                    )
-
+                    temp["Renovación"] = renewal_labels(temp["renewal"])
                     temp = temp.dropna(subset=[variable])
-
                     temp = temp[
                         temp["Renovación"].isin(
                             ["Renovó", "No renovó"]
@@ -867,20 +892,18 @@ elif pagina == "Análisis exploratorio (EDA)":
                     ]
 
                     if temp.empty:
-                        st.warning(
-                            "No hay datos válidos para comparar."
-                        )
+                        st.warning("No hay datos válidos para comparar.")
 
                     else:
-                        # Las estadísticas usan todos los registros.
-                        # Solo el gráfico usa una muestra.
-                        plot_df = temp
+                        plot_df = plot_sample(
+                            temp[variable]
+                        ).to_frame()
 
-                        if len(temp) > MAX_PLOT_ROWS:
-                            plot_df = temp.sample(
-                                n=MAX_PLOT_ROWS,
-                                random_state=42
-                            )
+                        # Recupera las etiquetas de renovación
+                        # correspondientes a los índices muestreados.
+                        plot_df["Renovación"] = temp.loc[
+                            plot_df.index, "Renovación"
+                        ]
 
                         fig, ax = plt.subplots(figsize=(8, 4))
 
@@ -891,49 +914,37 @@ elif pagina == "Análisis exploratorio (EDA)":
                             ax=ax
                         )
 
-                        ax.set_title(
-                            f"{variable} según renovación"
-                        )
-
+                        ax.set_title(f"{variable} según renovación")
                         show_plot(fig)
 
                         summary = (
                             temp.groupby("Renovación")[variable]
                             .agg([
-                                "count",
-                                "mean",
-                                "median",
-                                "std",
-                                "min",
-                                "max"
+                                "count", "mean", "median",
+                                "std", "min", "max"
                             ])
                         )
 
-                        st.markdown(
-                            "**Estadísticas con todos los registros válidos**"
-                        )
-
+                        st.markdown("**Estadísticas de todos los registros válidos**")
                         st.dataframe(
                             summary.round(2),
                             use_container_width=True
                         )
 
                         st.caption(
-                            f"Registros comparados: {len(temp):,}. "
-                            f"Registros utilizados en el gráfico: "
-                            f"{len(plot_df):,}."
+                            f"Registros comparados: {len(temp):,}; "
+                            f"registros graficados: {len(plot_df):,}."
                         )
 
                         st.info(
-                            "Las diferencias descriptivas no "
-                            "demuestran causalidad."
+                            "Las diferencias descriptivas no demuestran causalidad."
                         )
 
         # -------------------------------------------------
-        # 8. CATEGÓRICA VS RENOVACIÓN
+        # TAB 8. CATEGÓRICA VS RENOVACIÓN
         # -------------------------------------------------
-        elif apartado == "8. Categórica vs renovación":
-            st.markdown("#### Renovación por categoría")
+        with tabs[7]:
+            st.markdown("### Renovación por categoría")
 
             if "renewal" not in df.columns:
                 st.info("Se requiere la columna `renewal`.")
@@ -942,22 +953,17 @@ elif pagina == "Análisis exploratorio (EDA)":
                 candidates = get_categorical_candidates(df)
 
                 if not candidates:
-                    st.info(
-                        "No hay variables categóricas para comparar."
-                    )
+                    st.info("No hay variables categóricas para comparar.")
 
                 else:
                     variable = st.selectbox(
                         "Variable categórica",
                         candidates,
-                        key="cat_ren_variable"
+                        key="tab8_variable"
                     )
 
                     temp = df[[variable, "renewal"]].copy()
-
-                    temp["Renovación"] = renewal_labels(
-                        temp["renewal"]
-                    )
+                    temp["Renovación"] = renewal_labels(temp["renewal"])
 
                     temp = temp[
                         temp["Renovación"].isin(
@@ -972,13 +978,9 @@ elif pagina == "Análisis exploratorio (EDA)":
                     )
 
                     if temp.empty:
-                        st.warning(
-                            "No hay datos válidos para comparar."
-                        )
+                        st.warning("No hay datos válidos para comparar.")
 
                     else:
-                        # Se conservan las categorías más frecuentes
-                        # para impedir tablas y gráficos demasiado grandes.
                         top_categories = (
                             temp[variable]
                             .value_counts()
@@ -999,39 +1001,34 @@ elif pagina == "Análisis exploratorio (EDA)":
                             temp[variable],
                             temp["Renovación"],
                             normalize="index"
-                        ).mul(100).round(2)
+                        ).mul(100)
 
-                        # Asegura que ambas columnas estén disponibles.
                         for label in ["Renovó", "No renovó"]:
                             if label not in counts.columns:
                                 counts[label] = 0
-
                             if label not in percentages.columns:
                                 percentages[label] = 0.0
 
-                        counts = counts[
-                            ["Renovó", "No renovó"]
-                        ]
-
+                        counts = counts[["Renovó", "No renovó"]]
                         percentages = percentages[
                             ["Renovó", "No renovó"]
-                        ]
+                        ].round(2)
 
-                        st.write("**Frecuencias**")
+                        left, right = st.columns(2)
 
-                        st.dataframe(
-                            counts,
-                            use_container_width=True
-                        )
+                        with left:
+                            st.markdown("**Frecuencias**")
+                            st.dataframe(
+                                counts,
+                                use_container_width=True
+                            )
 
-                        st.write(
-                            "**Porcentaje dentro de cada categoría**"
-                        )
-
-                        st.dataframe(
-                            percentages,
-                            use_container_width=True
-                        )
+                        with right:
+                            st.markdown("**Porcentaje por categoría**")
+                            st.dataframe(
+                                percentages,
+                                use_container_width=True
+                            )
 
                         fig, ax = plt.subplots(figsize=(9, 4))
 
@@ -1041,16 +1038,11 @@ elif pagina == "Análisis exploratorio (EDA)":
                             ax=ax
                         )
 
-                        ax.set_title(
-                            f"Renovación por {variable}"
-                        )
+                        ax.set_title(f"Renovación por {variable}")
                         ax.set_ylabel("Porcentaje (%)")
                         ax.set_xlabel(variable)
                         ax.set_ylim(0, 100)
-                        ax.tick_params(
-                            axis="x",
-                            rotation=30
-                        )
+                        ax.tick_params(axis="x", rotation=30)
                         ax.legend(
                             title="Renovación",
                             bbox_to_anchor=(1.02, 1),
@@ -1060,24 +1052,22 @@ elif pagina == "Análisis exploratorio (EDA)":
                         show_plot(fig)
 
                         st.caption(
-                            "Se muestran las categorías más frecuentes. "
-                            "Los porcentajes se calculan dentro de cada "
-                            "categoría seleccionada."
+                            "Se muestran hasta las 20 categorías más "
+                            "frecuentes; los porcentajes se calculan "
+                            "dentro de cada categoría."
                         )
 
         # -------------------------------------------------
-        # 9. ANÁLISIS DINÁMICO
+        # TAB 9. ANÁLISIS DINÁMICO
         # -------------------------------------------------
-        elif apartado == "9. Análisis dinámico":
-            st.markdown("#### Análisis dinámico de datos")
+        with tabs[8]:
+            st.markdown("### Análisis dinámico de datos")
 
             columns = st.multiselect(
                 "Columnas a incluir",
                 options=df.columns.tolist(),
-                default=df.columns.tolist()[
-                    :min(5, len(df.columns))
-                ],
-                key="dynamic_columns"
+                default=df.columns.tolist()[:min(5, len(df.columns))],
+                key="tab9_columns"
             )
 
             if not columns:
@@ -1088,7 +1078,7 @@ elif pagina == "Análisis exploratorio (EDA)":
 
                 apply_filter = st.checkbox(
                     "Aplicar filtro por categoría",
-                    key="dynamic_apply_filter"
+                    key="tab9_apply_filter"
                 )
 
                 if apply_filter:
@@ -1099,61 +1089,50 @@ elif pagina == "Análisis exploratorio (EDA)":
 
                     if not options:
                         st.warning(
-                            "Incluye una columna categórica de texto "
-                            "para aplicar el filtro."
+                            "Selecciona al menos una columna categórica "
+                            "para poder filtrar."
                         )
 
                     else:
                         variable = st.selectbox(
                             "Filtrar por",
                             options,
-                            key="dynamic_filter_column"
+                            key="tab9_filter_variable"
                         )
 
-                        # Se muestran únicamente las categorías más
-                        # frecuentes para mantener el menú manejable.
-                        value_counts = (
+                        series = (
                             df[variable]
                             .astype("string")
                             .fillna("(Sin dato)")
-                            .value_counts()
                         )
 
-                        available_values = value_counts.head(
-                            100
-                        ).index.tolist()
+                        available_values = (
+                            series.value_counts()
+                            .head(100)
+                            .index.tolist()
+                        )
 
                         selected = st.multiselect(
-                            "Valores incluidos (máximo 100 opciones)",
+                            "Valores incluidos",
                             options=available_values,
-                            default=available_values[
-                                :min(10, len(available_values))
-                            ],
-                            key="dynamic_filter_values"
+                            default=available_values[:min(10, len(available_values))],
+                            key="tab9_filter_values"
                         )
 
                         if selected:
-                            filtered = filtered[
-                                df.loc[
-                                    filtered.index, variable
-                                ]
-                                .astype("string")
-                                .fillna("(Sin dato)")
-                                .isin(selected)
-                            ]
-
+                            mask = series.isin(selected)
+                            filtered = filtered.loc[mask]
                         else:
                             filtered = filtered.iloc[0:0]
 
                         st.caption(
-                            "El filtro ofrece hasta 100 categorías, "
+                            "Se ofrecen hasta 100 categorías, "
                             "priorizando las más frecuentes."
                         )
 
-                st.metric(
-                    "Registros filtrados",
-                    f"{len(filtered):,}"
-                )
+                col1, col2 = st.columns(2)
+                col1.metric("Registros filtrados", f"{len(filtered):,}")
+                col2.metric("Columnas seleccionadas", len(columns))
 
                 st.dataframe(
                     filtered.head(MAX_TABLE_ROWS),
@@ -1164,14 +1143,13 @@ elif pagina == "Análisis exploratorio (EDA)":
                 if len(filtered) > MAX_TABLE_ROWS:
                     st.caption(
                         f"Se muestran los primeros {MAX_TABLE_ROWS:,} "
-                        "registros. La descarga contiene todos los "
-                        "registros filtrados."
+                        "registros; la descarga incluye todos los filtrados."
                     )
 
                 download_csv(
                     filtered,
                     "insurancecompany_seleccion.csv",
-                    "dynamic_download"
+                    "tab9_download"
                 )
 
                 selected_numeric = [
@@ -1180,7 +1158,7 @@ elif pagina == "Análisis exploratorio (EDA)":
                 ]
 
                 if selected_numeric and not filtered.empty:
-                    st.write("**Resumen estadístico**")
+                    st.markdown("#### Resumen estadístico")
 
                     st.dataframe(
                         filtered[selected_numeric]
@@ -1190,68 +1168,58 @@ elif pagina == "Análisis exploratorio (EDA)":
                     )
 
         # -------------------------------------------------
-        # 10. HALLAZGOS CLAVE
+        # TAB 10. HALLAZGOS
         # -------------------------------------------------
-        elif apartado == "10. Hallazgos":
-            st.markdown("#### Hallazgos clave")
-
-            st.write(
-                "Resumen de la calidad del dataset y de los "
-                "patrones observados en la renovación de pólizas."
-            )
+        with tabs[9]:
+            st.markdown("### Hallazgos clave")
 
             total_cells = df.size
             missing_cells = int(df.isna().sum().sum())
-
-            c1, c2, c3 = st.columns(3)
-
-            c1.metric("Registros", f"{len(df):,}")
-            c2.metric("Variables", f"{df.shape[1]:,}")
 
             missing_pct = (
                 missing_cells / total_cells * 100
                 if total_cells else 0
             )
 
-            c3.metric(
-                "Celdas faltantes",
-                f"{missing_pct:.2f}%"
-            )
+            col1, col2, col3 = st.columns(3)
+
+            col1.metric("Registros", f"{len(df):,}")
+            col2.metric("Variables", f"{df.shape[1]:,}")
+            col3.metric("Celdas faltantes", f"{missing_pct:.2f}%")
 
             findings = []
 
             # Calidad de datos
-            if missing_cells:
-                top_missing = missing_summary(df).iloc[0]
+            missing = missing_summary(df)
 
+            if missing_cells:
+                top_missing = missing.iloc[0]
                 findings.append(
-                    f"La variable con más datos faltantes es "
+                    f"La variable con más faltantes es "
                     f"**{top_missing['Variable']}**, con "
                     f"**{top_missing['% faltantes']:.2f}%**."
                 )
-
             else:
-                findings.append(
-                    "No se detectaron valores faltantes."
-                )
+                findings.append("No se detectaron valores faltantes.")
 
-            # Tipos de variables
             findings.append(
                 f"El dataset contiene **{len(numeric)} variables "
                 f"numéricas** y **{len(categorical)} variables "
                 "categóricas o de texto**."
             )
 
-            # Proporción de renovación
-            st.markdown(
-                "#### ¿Cuántos clientes renovaron su póliza?"
-            )
+            if "id" in df.columns:
+                duplicates = int(df["id"].duplicated().sum())
+                findings.append(
+                    f"Se encontraron **{duplicates:,} identificadores "
+                    "repetidos** en `id`; valida si debe ser única."
+                )
+
+            # Resumen de renovación
+            st.markdown("#### Proporción de renovación")
 
             if "renewal" not in df.columns:
-                st.info(
-                    "No se encontró la columna `renewal`; "
-                    "no es posible mostrar la proporción de renovación."
-                )
+                st.info("No se encontró la columna `renewal`.")
 
             else:
                 renewal = pd.to_numeric(
@@ -1264,17 +1232,13 @@ elif pagina == "Análisis exploratorio (EDA)":
 
                 if valid_count == 0:
                     st.warning(
-                        "La columna `renewal` no contiene valores "
-                        "válidos codificados como 0 y 1."
+                        "No hay valores válidos 0/1 para analizar."
                     )
 
                 else:
                     counts = (
                         renewal[valid]
-                        .map({
-                            1: "Renovó",
-                            0: "No renovó"
-                        })
+                        .map({1: "Renovó", 0: "No renovó"})
                         .value_counts()
                         .reindex(
                             ["Renovó", "No renovó"],
@@ -1282,33 +1246,30 @@ elif pagina == "Análisis exploratorio (EDA)":
                         )
                     )
 
-                    percentages = (
-                        counts / valid_count * 100
-                    )
+                    percentages = counts / valid_count * 100
 
                     left, right = st.columns([1.2, 1])
 
                     with left:
-                        fig, ax = plt.subplots(
-                            figsize=(6, 3.5)
-                        )
+                        fig, ax = plt.subplots(figsize=(6, 3.5))
 
                         bars = ax.bar(
                             counts.index,
                             percentages.values
                         )
 
-                        ax.set_title(
-                            "Proporción de renovación"
-                        )
+                        ax.set_title("Proporción de renovación")
                         ax.set_ylabel("Clientes (%)")
-                        ax.set_ylim(0, 110)
+                        ax.set_ylim(
+                            0,
+                            max(10, float(percentages.max()) * 1.2)
+                        )
 
                         ax.bar_label(
                             bars,
                             labels=[
-                                f"{p:.1f}%"
-                                for p in percentages.values
+                                f"{value:.1f}%"
+                                for value in percentages.values
                             ],
                             padding=3
                         )
@@ -1316,68 +1277,46 @@ elif pagina == "Análisis exploratorio (EDA)":
                         show_plot(fig)
 
                     with right:
-                        st.markdown(
-                            "**Resumen de resultados**"
-                        )
-
-                        summary = pd.DataFrame({
-                            "Resultado": counts.index,
-                            "Clientes": counts.values,
-                            "Proporción (%)": (
-                                percentages.round(2).values
-                            )
-                        })
-
                         st.dataframe(
-                            summary,
+                            pd.DataFrame({
+                                "Resultado": counts.index,
+                                "Clientes": counts.values,
+                                "Proporción (%)": percentages.round(2).values
+                            }),
                             use_container_width=True,
                             hide_index=True
                         )
 
-                        st.caption(
-                            f"Base del cálculo: {valid_count:,} "
-                            "registros válidos."
-                        )
-
                     findings.append(
                         f"El **{percentages['Renovó']:.2f}%** de los "
-                        "registros válidos corresponde a clientes que "
-                        f"renovaron, frente al "
-                        f"**{percentages['No renovó']:.2f}%** que "
-                        "no renovaron."
+                        "registros válidos renovó su póliza, frente al "
+                        f"**{percentages['No renovó']:.2f}%** que no renovó."
                     )
 
-                    invalid_count = len(df) - valid_count
-
-                    if invalid_count:
-                        st.warning(
-                            f"Se excluyeron {invalid_count:,} registros "
-                            "del cálculo porque `renewal` contiene "
-                            "valores nulos o diferentes de 0 y 1."
+                    if len(df) > valid_count:
+                        st.caption(
+                            f"Se excluyeron {len(df) - valid_count:,} "
+                            "registros con valores inválidos de `renewal`."
                         )
-
-            # Identificadores repetidos
-            if "id" in df.columns:
-                duplicates = int(
-                    df["id"].duplicated().sum()
-                )
-
-                findings.append(
-                    f"Se encontraron **{duplicates:,} identificadores "
-                    "repetidos** en `id`; verifica si debe ser única."
-                )
 
             st.markdown("#### Principales hallazgos")
 
             for i, finding in enumerate(findings, start=1):
                 st.markdown(f"{i}. {finding}")
 
-            st.caption(
-                "Los resultados son descriptivos y no demuestran "
-                "causalidad. Contrasta su interpretación con el "
-                "contexto del negocio."
-            )
+            st.markdown("#### Recomendaciones")
 
+            st.markdown("""
+            - Revisar las variables con mayor proporción de datos faltantes.
+            - Validar la unicidad de los identificadores.
+            - Comparar la renovación entre distintos grupos de clientes.
+            - Contrastar los resultados con el contexto del negocio.
+            - No inferir causalidad a partir de relaciones descriptivas.
+            """)
+
+            st.caption(
+                "Los hallazgos son descriptivos y no demuestran causalidad."
+            )
 
 # =========================================================
 # 9. CONCLUSIONES
