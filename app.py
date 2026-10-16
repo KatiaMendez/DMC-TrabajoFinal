@@ -144,20 +144,26 @@ def download_csv(df, filename, key):
 # =========================================================
 # 3. ENCABEZADO Y NAVEGACIÓN
 # =========================================================
-st.title("📊 InsuranceCompany | Análisis Exploratorio de Datos")
+st.title("📊 InsuranceCompany | EDA")
 st.caption("Caso de Estudio N.° 3 · Python for Analytics · 2026")
 
 with st.sidebar:
-    st.header("Navegación")
-    module = st.radio(
-        "Selecciona un módulo",
-        ["Inicio", "Carga del dataset",
-         "Análisis exploratorio (EDA)", "Conclusiones"]
+    st.subheader("Menú principal")
+
+    pagina = st.selectbox(
+        "Selecciona una sección:",
+        [
+            "Inicio",
+            "Carga del dataset",
+            "Análisis exploratorio (EDA)",
+            "Conclusiones"
+        ],
+        key="menu_navegacion"
     )
 
     st.divider()
     uploaded_file = st.file_uploader(
-        "Carga InsuranceCompany.csv",
+        "Carga archivo para análisis",
         type=["csv"],
         help="Se admite un archivo CSV de hasta 200 MB."
     )
