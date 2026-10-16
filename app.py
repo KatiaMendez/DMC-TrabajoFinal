@@ -674,4 +674,3 @@ elif module == "Conclusiones":
 # =========================================================
 st.sidebar.divider()
 st.sidebar.caption("InsuranceCompany EDA · Aplicación académica")
-```
