@@ -347,21 +347,21 @@ if uploaded_file is not None:
 if load_error:
     st.error(f"Error al cargar el dataset: {load_error}")
 
-if df is not None:
-    for note in notes:
-        st.warning(note)
+#if df is not None:
+#    for note in notes:
+#        st.warning(note)
 
-    missing_columns = sorted(
-        EXPECTED_COLUMNS - set(df.columns)
-    )
+#    missing_columns = sorted(
+#        EXPECTED_COLUMNS - set(df.columns)
+#    )
 
-    if missing_columns:
-        st.warning(
-            "Faltan columnas del esquema esperado: "
-            + ", ".join(missing_columns)
-        )
-
-    numeric, categorical = get_column_types(df)
+#    if missing_columns:
+#        st.warning(
+#            "Faltan columnas del esquema esperado: "
+#            + ", ".join(missing_columns)
+#        )
+#
+#    numeric, categorical = get_column_types(df)
 
 
 # =========================================================
