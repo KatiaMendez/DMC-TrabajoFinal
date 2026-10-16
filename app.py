@@ -673,80 +673,138 @@ elif pagina == "Análisis exploratorio (EDA)":
         # -------------------------------------------------
         # TAB 4. FALTANTES
         # -------------------------------------------------
+        
         with tabs[3]:
-            st.markdown("### Análisis de valores faltantes")
-
-            missing = missing_summary(df)
-            missing = missing[
-                missing["Valores faltantes"] > 0
-            ].copy()
-
-            total_missing = int(df.isna().sum().sum())
-            total_cells = df.size
-            missing_pct = (
-                total_missing / total_cells * 100
-                if total_cells else 0
+            st.subheader("4. Análisis de valores faltantes")
+        
+            st.write(
+                "Se analiza la cantidad y proporción de valores faltantes "
+                "por variable para identificar posibles problemas de calidad "
+                "en el dataset."
             )
-
+        
+            # 1. Conteo de valores faltantes
+            faltantes = df.isna().sum()
+        
+            resumen_faltantes = pd.DataFrame({
+                "Variable": df.columns,
+                "Valores faltantes": faltantes.values,
+                "Porcentaje faltante (%)": (
+                    faltantes.values / len(df) * 100
+                    if len(df) > 0
+                    else 0
+                )
+            })
+        
+            # Ordenar de mayor a menor cantidad de faltantes
+            resumen_faltantes = resumen_faltantes.sort_values(
+                by="Valores faltantes",
+                ascending=False
+            )
+        
+            total_faltantes = int(faltantes.sum())
+            total_celdas = df.shape[0] * df.shape[1]
+            porcentaje_general = (
+                total_faltantes / total_celdas * 100
+                if total_celdas > 0
+                else 0
+            )
+        
+            variables_con_faltantes = int((faltantes > 0).sum())
+        
             col1, col2, col3 = st.columns(3)
-
-            col1.metric("Celdas faltantes", f"{total_missing:,}")
-            col2.metric("Porcentaje faltante", f"{missing_pct:.2f}%")
-            col3.metric("Variables afectadas", f"{len(missing):,}")
-
-            if missing.empty:
-                st.success("No se detectaron valores faltantes.")
-
+        
+            with col1:
+                st.metric("Total de valores faltantes", f"{total_faltantes:,}")
+        
+            with col2:
+                st.metric(
+                    "Variables con faltantes",
+                    f"{variables_con_faltantes:,}"
+                )
+        
+            with col3:
+                st.metric(
+                    "Porcentaje general faltante",
+                    f"{porcentaje_general:.2f}%"
+                )
+        
+            st.markdown("#### Detalle por variable")
+        
+            st.dataframe(
+                resumen_faltantes,
+                use_container_width=True,
+                hide_index=True
+            )
+        
+            # 2. Visualización simple
+            st.markdown("#### Visualización de valores faltantes")
+        
+            datos_grafico = resumen_faltantes[
+                resumen_faltantes["Valores faltantes"] > 0
+            ].sort_values(
+                by="Valores faltantes",
+                ascending=True
+            )
+        
+            if not datos_grafico.empty:
+                fig, ax = plt.subplots(
+                    figsize=(9, max(3, len(datos_grafico) * 0.35))
+                )
+        
+                ax.barh(
+                    datos_grafico["Variable"],
+                    datos_grafico["Valores faltantes"]
+                )
+        
+                ax.set_title("Cantidad de valores faltantes por variable")
+                ax.set_xlabel("Cantidad de valores faltantes")
+                ax.set_ylabel("Variable")
+        
+                fig.tight_layout()
+                st.pyplot(fig)
+                plt.close(fig)
             else:
-                left, right = st.columns([1.2, 1])
-
-                with left:
-                    fig, ax = plt.subplots(figsize=(8, 4))
-
-                    sns.barplot(
-                        data=missing.head(30),
-                        x="% faltantes",
-                        y="Variable",
-                        ax=ax
+                st.success(
+                    "No se encontraron valores faltantes en el dataset."
+                )
+        
+            # 3. Discusión breve
+            st.markdown("#### Discusión de resultados")
+        
+            if total_faltantes == 0:
+                st.write(
+                    "El dataset no presenta valores faltantes detectados. "
+                    "Esto facilita el análisis, aunque no garantiza por sí "
+                    "solo la calidad de todos los datos."
+                )
+            else:
+                st.write(
+                    f"Se identificaron {total_faltantes:,} valores faltantes, "
+                    f"equivalentes al {porcentaje_general:.2f}% del total "
+                    "de celdas. Estos valores podrían afectar los análisis "
+                    "de las variables involucradas."
+                )
+        
+                variables_mas_afectadas = resumen_faltantes[
+                    resumen_faltantes["Valores faltantes"] > 0
+                ].head(3)
+        
+                if not variables_mas_afectadas.empty:
+                    nombres = ", ".join(
+                        variables_mas_afectadas["Variable"].astype(str)
                     )
-
-                    ax.set_title("Porcentaje de valores faltantes")
-                    show_plot(fig)
-
-                with right:
-                    st.dataframe(
-                        missing,
-                        use_container_width=True,
-                        hide_index=True
+        
+                    st.write(
+                        f"Las variables con mayor cantidad de valores faltantes "
+                        f"son: {nombres}."
                     )
-
-                st.info(
-                    "Valida la causa de los faltantes antes de "
-                    "imputar o excluir registros."
+        
+                st.write(
+                    "Antes de eliminar registros o imputar valores, conviene "
+                    "evaluar la proporción de faltantes, la naturaleza de las "
+                    "variables afectadas y el posible impacto en los resultados."
                 )
-
-            st.markdown("#### Identificadores duplicados")
-
-            if "id" in df.columns:
-                duplicate_mask = df["id"].duplicated(keep=False)
-
-                col1, col2 = st.columns(2)
-                col1.metric(
-                    "Identificadores repetidos",
-                    f"{int(df['id'].duplicated().sum()):,}"
-                )
-                col2.metric(
-                    "Filas involucradas",
-                    f"{int(duplicate_mask.sum()):,}"
-                )
-
-                if duplicate_mask.any():
-                    with st.expander("Consultar registros repetidos"):
-                        st.dataframe(
-                            df.loc[duplicate_mask].head(MAX_TABLE_ROWS),
-                            use_container_width=True,
-                            hide_index=True
-                        )
 
         # -------------------------------------------------
         # TAB 5. DISTRIBUCIONES
