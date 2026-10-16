@@ -1,4 +1,3 @@
-```python
 """
 InsuranceCompany | Exploración de Datos (EDA)
 Caso de Estudio N.° 3 – Python for Analytics
