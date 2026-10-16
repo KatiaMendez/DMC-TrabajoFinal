@@ -163,7 +163,6 @@ DMC-TrabajoFinal/
 - `README.md`: presenta la documentación del proyecto.
 - `screenshots/`: contiene las capturas de pantalla utilizadas para ilustrar las funcionalidades de la aplicación.
 
-La carpeta `screenshots/` debe crearse si aún no existe.
 
 ## 5. Tecnologías utilizadas
 
