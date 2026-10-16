@@ -188,6 +188,7 @@ st.caption(
 )
 
 with st.sidebar:
+    st.sidebar.image("LogoKRMC-rectangular.png")
     st.header("Navegación")
     module = st.radio(
         "Selecciona un módulo",
