@@ -47,14 +47,8 @@ st.markdown("""
 }
 
 [data-testid="stSidebar"] hr {
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
-}
-
-[data-testid="stSidebar"] [data-testid="stImage"] img {
-    max-width: 145px;
-    max-height: 55px;
-    object-fit: contain;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 [data-testid="stSidebar"] h1 {
@@ -291,10 +285,10 @@ st.title("📊 InsuranceCompany | EDA")
 st.caption("Caso de Estudio N.° 3 · 2026")
 
 with st.sidebar:
-    st.title("Python for Analytics")
+    st.subheader("Python for Analytics")
 
     try:
-        st.image("LogoKRMC-rectangular.png", width=145)
+        st.image("LogoKRMC-rectangular.png", width=185)
     except Exception:
         st.caption("InsuranceCompany EDA")
 
@@ -319,10 +313,6 @@ with st.sidebar:
         "Carga archivo para análisis",
         type=["csv"],
         help="Archivo CSV de hasta 200 MB."
-    )
-
-    st.caption(
-        "Python · Streamlit · Pandas · NumPy · Matplotlib"
     )
 
     st.divider()
