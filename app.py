@@ -499,6 +499,7 @@ elif pagina == "Análisis exploratorio (EDA)":
         # -------------------------------------------------
         with tabs[0]:
             st.markdown("### Información general")
+            st.info("Este dataset contiene información histórica de clientes de una compañía de seguros. Incluye variables demográficas, económicas,historial de pagos, comportamiento de morosidad, canal de captación,tipo de residencia, valor de la prima y puntaje de evaluación del cliente.")
 
             col1, col2, col3 = st.columns(3)
             col1.metric("Registros", f"{len(df):,}")
@@ -1303,16 +1304,6 @@ elif pagina == "Análisis exploratorio (EDA)":
 
             for i, finding in enumerate(findings, start=1):
                 st.markdown(f"{i}. {finding}")
-
-            st.markdown("#### Recomendaciones")
-
-            st.markdown("""
-            - Revisar las variables con mayor proporción de datos faltantes.
-            - Validar la unicidad de los identificadores.
-            - Comparar la renovación entre distintos grupos de clientes.
-            - Contrastar los resultados con el contexto del negocio.
-            - No inferir causalidad a partir de relaciones descriptivas.
-            """)
 
             st.caption(
                 "Los hallazgos son descriptivos y no demuestran causalidad."
