@@ -288,7 +288,7 @@ with st.sidebar:
     st.subheader("Python for Analytics")
 
     try:
-        st.image("LogoKRMC-rectangular.png", width=185)
+        st.image("LogoKRMC-rectangular.png", width=205)
     except Exception:
         st.caption("InsuranceCompany EDA")
 
@@ -347,22 +347,6 @@ if uploaded_file is not None:
 if load_error:
     st.error(f"Error al cargar el dataset: {load_error}")
 
-#if df is not None:
-#    for note in notes:
-#        st.warning(note)
-
-#    missing_columns = sorted(
-#        EXPECTED_COLUMNS - set(df.columns)
-#    )
-
-#    if missing_columns:
-#        st.warning(
-#            "Faltan columnas del esquema esperado: "
-#            + ", ".join(missing_columns)
-#        )
-#
-#    numeric, categorical = get_column_types(df)
-
 
 # =========================================================
 # 6. INICIO
@@ -414,6 +398,22 @@ elif pagina == "Carga del dataset":
         st.warning("Carga un archivo CSV válido para continuar.")
 
     else:
+        if df is not None:
+            for note in notes:
+                st.warning(note)
+        
+            missing_columns = sorted(
+                EXPECTED_COLUMNS - set(df.columns)
+            )
+        
+            if missing_columns:
+                st.warning(
+                    "Faltan columnas del esquema esperado: "
+                    + ", ".join(missing_columns)
+                )
+        
+            numeric, categorical = get_column_types(df)
+        
         a, b, c = st.columns(3)
 
         a.metric("Registros", f"{len(df):,}")
